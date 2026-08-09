@@ -17,22 +17,6 @@ inline Matrix4x4 Dot(const Matrix4x4& lhs, const Matrix4x4& rhs) {
     columns[1] = r1;
     columns[2] = r2;
     columns[3] = r3;
-    // columns[0] = _mm_unpacklo_ps(r0, r1);
-    // columns[1] = _mm_unpacklo_ps(r2, r3);
-    // columns[2] = _mm_unpackhi_ps(r0, r1);
-    // columns[3] = _mm_unpackhi_ps(r2, r3);
-
-    // tmp0 = _mm_unpacklo_ps(columns[0], columns[1]);
-    // tmp1 = _mm_unpackhi_ps(columns[0], columns[1]);
-    // columns[0] = _mm_shuffle_ps(tmp0, tmp0, _MM_SHUFFLE(3, 1, 2, 0));
-    // columns[1] = _mm_shuffle_ps(tmp1, tmp1, _MM_SHUFFLE(3, 1, 2, 0));
-
-    // tmp0 = _mm_unpacklo_ps(columns[2], columns[3]);
-    // tmp1 = _mm_unpackhi_ps(columns[2], columns[3]);
-    // columns[2] = _mm_shuffle_ps(tmp0, tmp0, _MM_SHUFFLE(3, 1, 2, 0));
-    // columns[3] = _mm_shuffle_ps(tmp1, tmp1, _MM_SHUFFLE(3, 1, 2, 0));
-
-    //__m128 accum;
     __m128 res[4];
 
 
@@ -52,11 +36,6 @@ inline Matrix4x4 Dot(const Matrix4x4& lhs, const Matrix4x4& rhs) {
         r3 = _mm_mul_ps(tmp0, columns[3]);
         res[i] = _mm_add_ps(res[i], r3);
     }
-    // __m128 c2 = _mm_unpacklo_ps(r0, r1);
-    // c2 = _mm_shuffle_ps(c2, c2, _MM_SHUFFLE(0, 2, 1, 3));
-    // __m128 c3 = _mm_unpacklo_ps(r2, r3);
-    // c3 = _mm_shuffle_ps(c3, c3, _MM_SHUFFLE(0, 2, 1, 3));
-    // __m128 res;
     for(int i = 0; i<4; i++) {
         _mm_store_ps(&result.data[i][0], res[i]);
     }
@@ -105,7 +84,8 @@ inline constexpr Matrix4x4 CreateTranslationMatrix(Vector3 in) {
     result.data[3][2] = in.z;
     return result;
 }
-inline constexpr Matrix4x4 MakeRotationMatrix(Quaternion inRot) {
+inline constexpr Matrix4x4 CreateRotationMatrix(Quaternion inRot) {
+    //TODO: Implement in SIMD
     Matrix4x4 result = Identity4x4;
     float i = inRot.x;
     float i2 = inRot.x*inRot.x;

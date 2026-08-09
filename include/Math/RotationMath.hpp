@@ -12,8 +12,6 @@
 #define DEG2RAD 0.0174532925f
 #define RAD2DEG 57.2957795131f
 
-using EulerAngles = Vector3;
-
 static constexpr Quaternion IdentityQuaternion {
     0.f,
     0.f,
@@ -25,7 +23,8 @@ inline
 #ifdef CPP_26_
 constexpr
 #endif
-Quaternion MakeQuaternion(EulerAngles inRot) {
+Quaternion MakeQuaternion(Vector3 inRot) {
+    //TODO: Implement in SIMD
     float halfCosX = std::cos(inRot.x*.5f);
     float halfSinX = std::sin(inRot.x*.5f);
     float halfCosY = std::cos(inRot.y*.5f);
@@ -40,11 +39,25 @@ Quaternion MakeQuaternion(EulerAngles inRot) {
     return result;
 }
 
-inline constexpr Vector3 GetForwardVector(Matrix4x4 inMat) {
+inline constexpr Vector3 GetForwardVector(Matrix4x4& inMat) {
     Vector3 res;
     res.x = inMat.data[2][0];
     res.y = inMat.data[2][1];
     res.z = inMat.data[2][2];
+    return res;
+}
+inline constexpr Vector3 GetUpVector(Matrix4x4& inMat) {
+    Vector3 res;
+    res.x = inMat.data[1][0];
+    res.y = inMat.data[1][1];
+    res.z = inMat.data[1][2];
+    return res;
+}
+inline constexpr Vector3 GetRightVector(Matrix4x4& inMat) {
+    Vector3 res;
+    res.x = inMat.data[0][0];
+    res.y = inMat.data[0][1];
+    res.z = inMat.data[0][2];
     return res;
 }
 

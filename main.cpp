@@ -39,15 +39,15 @@ int main(int, char**){
     */
 
     Vector3 cubeVerts[8] { //front 4 vertices
-                     {-0.5f, 0.5f, -0.5f},
+                     {-0.5f, 0.5f, -1.5f},
+                    {0.5f, 0.5f, -1.5f},
+                    {0.5f, -0.5f, -1.5f},
+                    {-0.5f, -0.5f, -1.5f},
+                    //back 4 vertices
+                    {-0.5f, 0.5f, -0.5f},
                     {0.5f, 0.5f, -0.5f},
                     {0.5f, -0.5f, -0.5f},
-                    {-0.5f, -0.5f, -0.5f},
-                    //back 4 vertices
-                    {-0.5f, 0.5f, 0.5f},
-                    {0.5f, 0.5f, 0.5f},
-                    {0.5f, -0.5f, 0.5f},
-                    {-0.5f, -0.5f, 0.5f}
+                    {-0.5f, -0.5f, -0.5f}
     };
     unsigned int cubeIndices[36] {
                                     4, 7, 6,
@@ -184,6 +184,7 @@ int main(int, char**){
 
     Matrix4x4 model = Identity4x4;
     Vector3 position {0.0f, 0.0f, 0.0f};
+    Vector3 rotation {0.0f, 0.0f, 0.0f};
     bool run = true;
     while(run) {
         SDL_PollEvent(&evt); 
@@ -205,8 +206,22 @@ int main(int, char**){
                         case SDL_SCANCODE_S:
                             position -= Vector3(0.0f, 0.05f, 0.0f);
                             break;
+                        case SDL_SCANCODE_RIGHT:
+                            rotation += Vector3(0.0f, 0.5f, 0.0f);
+                            break;
+                        case SDL_SCANCODE_LEFT:
+                            rotation -= Vector3(0.0f, 0.5f, 0.0f);
+                            break;
+                        case SDL_SCANCODE_UP:
+                            rotation += Vector3(0.5f, 0.0f, 0.0f);
+                            break;
+                        case SDL_SCANCODE_DOWN:
+                            rotation -= Vector3(0.5f, 0.0f, 0.0f);
+                            break;
                     }
-                    model = Dot(CreateTranslationMatrix(position), Identity4x4);
+                    Quaternion quatRot = MakeQuaternion(rotation);
+                    model = Dot(CreateRotationMatrix(quatRot), Identity4x4);
+                    model = Dot(CreateTranslationMatrix(position), model);
         }
         glUseProgram(shaderProg);
         glUniformMatrix4fv(modelId, 1, GL_TRUE, &model.data[0][0]);
