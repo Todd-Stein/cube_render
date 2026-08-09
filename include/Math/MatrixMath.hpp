@@ -2,37 +2,33 @@
 #define MATRIX_MATH_HPP_
 #include "DataTypes/Matrices.hpp"
 #include "DataTypes/Vectors.hpp"
+#include "Math/MathConstants.hpp"
 
 //with transpose
 inline Matrix4x4 Dot(const Matrix4x4& lhs, const Matrix4x4& rhs) {
     Matrix4x4 result;
-    __m128 r0 = _mm_load_ps(&rhs.data[0][0]);
-    __m128 r1 = _mm_load_ps(&rhs.data[1][0]);
-    __m128 r2 = _mm_load_ps(&rhs.data[2][0]);
-    __m128 r3 = _mm_load_ps(&rhs.data[3][0]);
+    __m128 r0, r1, r2, r3;
     __m128 tmp0;//, tmp1;
             
     __m128 columns[4];
-    columns[0] = r0;
-    columns[1] = r1;
-    columns[2] = r2;
-    columns[3] = r3;
+    columns[0] = _mm_load_ps(&rhs.data[0][0]);
+    columns[1] = _mm_load_ps(&rhs.data[1][0]);
+    columns[2] = _mm_load_ps(&rhs.data[2][0]);
+    columns[3] = _mm_load_ps(&rhs.data[3][0]);
     __m128 res[4];
 
-
-    //column number HAS to match row number
     for(int i = 0; i<4; i++) {
         res[i] = _mm_setzero_ps();
-        tmp0 = _mm_set1_ps(lhs.data[i][0]);
+        tmp0 = _mm_set1_ps(lhs.data[0][i]);
         r0 = _mm_mul_ps(tmp0, columns[0]);
         res[i] = _mm_add_ps(res[i], r0);
-        tmp0 = _mm_set1_ps(lhs.data[i][1]);
+        tmp0 = _mm_set1_ps(lhs.data[1][i]);
         r1 = _mm_mul_ps(tmp0, columns[1]);
         res[i] = _mm_add_ps(res[i], r1);
-        tmp0 = _mm_set1_ps(lhs.data[i][2]);
+        tmp0 = _mm_set1_ps(lhs.data[2][i]);
         r2 = _mm_mul_ps(tmp0, columns[2]);
         res[i] = _mm_add_ps(res[i], r2);
-        tmp0 = _mm_set1_ps(lhs.data[i][3]);
+        tmp0 = _mm_set1_ps(lhs.data[3][i]);
         r3 = _mm_mul_ps(tmp0, columns[3]);
         res[i] = _mm_add_ps(res[i], r3);
     }
@@ -95,19 +91,32 @@ inline constexpr Matrix4x4 CreateRotationMatrix(Quaternion inRot) {
     float k2 = inRot.z*inRot.z;
     float r = inRot.w;
     float r2 = inRot.w*inRot.w;
-    result.data[0][0] = 1.f - (2.f*(j2) - 2.f*(k2));
+    result.data[0][0] = 1.f - 2.f * (j2 + k2);
     result.data[0][1] = 2.f*(i*j) - 2.f*(r*k);
     result.data[0][2] = 2.f*(i*k)+2.f*(r*j);
 
     result.data[1][0] = 2.f*(i*j) + 2.f*(r*k);
-    result.data[1][1] = 1.f - (2.f*(i2) - 2.f*(k2));
+    result.data[1][1] = 1.f - 2.f * (i2 + k2);
     result.data[1][2] = 2.f*(j*k) - 2.f*(r*i);
 
     result.data[2][0] = 2.f*(i*k) - 2.f*(r*j);
     result.data[2][1] = 2.f*(j*k) + 2.f*(r*i);
-    result.data[2][2] = 1.f - (2.f*(i2) - 2.f*(j2));
+    result.data[2][2] = 1.f - 2.f * (i2 + j2);
     return result;
 }
 
+
+inline Matrix4x4 CreatePerspectiveProjectionMatrix(const float fov, const float near, const float far, float aspectRatio) {
+    //put into row major order
+    Matrix4x4 projMat = Identity4x4;
+    float projScale = 1/(std::tan(fov*DEG2RAD*0.5f));
+    projMat.data[0][0] = projScale/aspectRatio;
+    projMat.data[1][1] = projScale;
+    projMat.data[2][2] = (far+near)/(near-far);
+    projMat.data[2][3] = (2*far*near)/(near-far);
+    projMat.data[3][2] = -1.0f;
+    projMat.data[3][3] = 0.0f;
+    return projMat;
+}
 
 #endif

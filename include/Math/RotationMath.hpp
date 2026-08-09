@@ -7,10 +7,8 @@
 
 #include "DataTypes/Vectors.hpp"
 #include "DataTypes/Matrices.hpp"
+#include "Math/MathConstants.hpp"
 #include <cmath>
-
-#define DEG2RAD 0.0174532925f
-#define RAD2DEG 57.2957795131f
 
 static constexpr Quaternion IdentityQuaternion {
     0.f,
@@ -25,12 +23,12 @@ constexpr
 #endif
 Quaternion MakeQuaternion(Vector3 inRot) {
     //TODO: Implement in SIMD
-    float halfCosX = std::cos(inRot.x*.5f);
-    float halfSinX = std::sin(inRot.x*.5f);
-    float halfCosY = std::cos(inRot.y*.5f);
-    float halfSinY = std::sin(inRot.y*.5f);
-    float halfCosZ = std::cos(inRot.z*.5f);
-    float halfSinZ = std::sin(inRot.z*.5f);
+    float halfCosX = std::cos(DEG2RAD*inRot.x*.5f);
+    float halfSinX = std::sin(DEG2RAD*inRot.x*.5f);
+    float halfCosY = std::cos(DEG2RAD*inRot.y*.5f);
+    float halfSinY = std::sin(DEG2RAD*inRot.y*.5f);
+    float halfCosZ = std::cos(DEG2RAD*inRot.z*.5f);
+    float halfSinZ = std::sin(DEG2RAD*inRot.z*.5f);
     Quaternion result;
     result.w = (halfCosX * halfCosY * halfCosZ) + (halfSinX * halfSinY * halfSinZ);
     result.x = (halfSinX * halfCosY * halfCosZ) - (halfCosX * halfSinY * halfSinZ);

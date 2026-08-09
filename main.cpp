@@ -17,6 +17,7 @@
 
 #define BASE_WIDTH 640
 #define BASE_HEIGHT 480
+#define BASE_ASPECT_RATIO BASE_WIDTH/BASE_HEIGHT
 
 //#define Matrix4x4 float[4][4];
 
@@ -39,15 +40,15 @@ int main(int, char**){
     */
 
     Vector3 cubeVerts[8] { //front 4 vertices
-                     {-0.5f, 0.5f, -1.5f},
-                    {0.5f, 0.5f, -1.5f},
-                    {0.5f, -0.5f, -1.5f},
-                    {-0.5f, -0.5f, -1.5f},
-                    //back 4 vertices
-                    {-0.5f, 0.5f, -0.5f},
+                     {-0.5f, 0.5f, -0.5f},
                     {0.5f, 0.5f, -0.5f},
                     {0.5f, -0.5f, -0.5f},
-                    {-0.5f, -0.5f, -0.5f}
+                    {-0.5f, -0.5f, -0.5f},
+                    //back 4 vertices
+                    {-0.5f, 0.5f, 0.5f},
+                    {0.5f, 0.5f, 0.5f},
+                    {0.5f, -0.5f, 0.5f},
+                    {-0.5f, -0.5f, 0.5f}
     };
     unsigned int cubeIndices[36] {
                                     4, 7, 6,
@@ -181,10 +182,27 @@ int main(int, char**){
     glDeleteShader(fragShader);
 
     GLuint modelId = glGetUniformLocation(shaderProg, "model");
+    GLuint projId = glGetUniformLocation(shaderProg, "projection");
 
     Matrix4x4 model = Identity4x4;
-    Vector3 position {0.0f, 0.0f, 0.0f};
+    Matrix4x4 projection = CreatePerspectiveProjectionMatrix(90.0f, 0.1f, 100.0f, 4.f/3.f);
+    
+    std::cout<<"Projection matrix:\n";
+    for(int i = 0; i<4; i++) {
+        for(int j = 0; j<4; j++) {
+            std::cout<<projection.data[i][j]<<" ";
+        }
+        std::cout<<"\n";
+    }
+    
+    Vector3 position {0.0f, 0.0f, -5.0f};
     Vector3 rotation {0.0f, 0.0f, 0.0f};
+    Quaternion quatRot = MakeQuaternion(rotation);
+    model = Dot(CreateTranslationMatrix(position), Identity4x4);
+    model = Dot(CreateRotationMatrix(quatRot), model);
+    //initial transform so object shows up in the first place until I properly
+    //reconstruct the render loop to something that makes more sense it's just
+    //in a placeholder state so I can properly hammer out logic first
     bool run = true;
     while(run) {
         SDL_PollEvent(&evt); 
@@ -201,10 +219,10 @@ int main(int, char**){
                             position += Vector3(0.05f, 0.0f, 0.0f);
                             break;
                         case SDL_SCANCODE_W:
-                            position += Vector3(0.0f, 0.05f, 0.0f);
+                            position += Vector3(0.0f, 0.0f, 0.05f);
                             break;
                         case SDL_SCANCODE_S:
-                            position -= Vector3(0.0f, 0.05f, 0.0f);
+                            position -= Vector3(0.0f, 0.0f, 0.05f);
                             break;
                         case SDL_SCANCODE_RIGHT:
                             rotation += Vector3(0.0f, 0.5f, 0.0f);
@@ -219,14 +237,24 @@ int main(int, char**){
                             rotation -= Vector3(0.5f, 0.0f, 0.0f);
                             break;
                     }
-                    Quaternion quatRot = MakeQuaternion(rotation);
+                    //TODO: CONVERT PROJECTION MATRIX ORDER TO ROW MAJOR SO BOTH CAN BE GL_TRUE
+                    quatRot = MakeQuaternion(rotation);
                     model = Dot(CreateRotationMatrix(quatRot), Identity4x4);
                     model = Dot(CreateTranslationMatrix(position), model);
         }
+        std::cout<<"model matrix:\n";
+        for(int i = 0; i<4; i++) {
+            for(int j = 0; j<4; j++) {
+                std::cout<<model.data[i][j]<<" ";
+            }
+            std::cout<<"\n";
+        }
+        std::cout<<"\n\n\n";
         glUseProgram(shaderProg);
-        glUniformMatrix4fv(modelId, 1, GL_TRUE, &model.data[0][0]);
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 30, GL_UNSIGNED_INT, &cubeIndices[0]);
+        glUniformMatrix4fv(modelId, 1, GL_TRUE, &model.data[0][0]);
+        glUniformMatrix4fv(projId, 1, GL_TRUE, &projection.data[0][0]);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, &cubeIndices[0]);
         glBindVertexArray(0);
         glUseProgram(0);
 
