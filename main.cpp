@@ -197,9 +197,11 @@ int main(int, char**){
     
     Vector3 position {0.0f, 0.0f, -5.0f};
     Vector3 rotation {0.0f, 0.0f, 0.0f};
+    Vector3 scale {1.0f, 1.0f, 1.0f};
     Quaternion quatRot = MakeQuaternion(rotation);
     model = Dot(CreateTranslationMatrix(position), Identity4x4);
     model = Dot(CreateRotationMatrix(quatRot), model);
+    model = Dot(CreateScaleMatrix(scale), model);
     //initial transform so object shows up in the first place until I properly
     //reconstruct the render loop to something that makes more sense it's just
     //in a placeholder state so I can properly hammer out logic first
@@ -236,24 +238,33 @@ int main(int, char**){
                         case SDL_SCANCODE_DOWN:
                             rotation -= Vector3(0.5f, 0.0f, 0.0f);
                             break;
+                        case SDL_SCANCODE_X:
+                            scale += Vector3(1.0f, 0.0f, 0.0f);
+                            break;
+                        case SDL_SCANCODE_Y:
+                            scale += Vector3(0.0f, 1.0f, 0.0f);
+                            break;
+                        case SDL_SCANCODE_Z:
+                            scale += Vector3(0.0f, 0.0f, 1.0f);
+                            break;
                     }
-                    //TODO: CONVERT PROJECTION MATRIX ORDER TO ROW MAJOR SO BOTH CAN BE GL_TRUE
                     quatRot = MakeQuaternion(rotation);
-                    model = Dot(CreateRotationMatrix(quatRot), Identity4x4);
+                    model = Dot(CreateScaleMatrix(scale), Identity4x4);
+                    model = Dot(CreateRotationMatrix(quatRot), model);
                     model = Dot(CreateTranslationMatrix(position), model);
         }
-        std::cout<<"model matrix:\n";
-        for(int i = 0; i<4; i++) {
-            for(int j = 0; j<4; j++) {
-                std::cout<<model.data[i][j]<<" ";
-            }
-            std::cout<<"\n";
-        }
+        // std::cout<<"model matrix:\n";
+        // for(int i = 0; i<4; i++) {
+        //     for(int j = 0; j<4; j++) {
+        //         std::cout<<model.data[i][j]<<" ";
+        //     }
+        //     std::cout<<"\n";
+        // }
         std::cout<<"\n\n\n";
         glUseProgram(shaderProg);
         glBindVertexArray(vao);
-        glUniformMatrix4fv(modelId, 1, GL_TRUE, &model.data[0][0]);
-        glUniformMatrix4fv(projId, 1, GL_TRUE, &projection.data[0][0]);
+        glUniformMatrix4fv(modelId, 1, GL_FALSE, &model.data[0][0]);
+        glUniformMatrix4fv(projId, 1, GL_FALSE, &projection.data[0][0]);
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, &cubeIndices[0]);
         glBindVertexArray(0);
         glUseProgram(0);
