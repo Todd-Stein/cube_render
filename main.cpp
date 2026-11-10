@@ -95,6 +95,7 @@ int main(int, char**){
     
     Simple_Array<int, 5> arrTest;
     arrTest[0] = 25;
+    std::cout<<arrTest[0]<<std::endl;
     std::cout<<sizeof(Vector3)<<std::endl;
 
     glEnable(GL_CULL_FACE);
@@ -199,67 +200,58 @@ int main(int, char**){
     Vector3 rotation {0.0f, 0.0f, 0.0f};
     Vector3 scale {1.0f, 1.0f, 1.0f};
     Quaternion quatRot = MakeQuaternion(rotation);
-    model = Dot(CreateTranslationMatrix(position), Identity4x4);
-    model = Dot(CreateRotationMatrix(quatRot), model);
-    model = Dot(CreateScaleMatrix(scale), model);
-    //initial transform so object shows up in the first place until I properly
-    //reconstruct the render loop to something that makes more sense it's just
-    //in a placeholder state so I can properly hammer out logic first
+    model = CreateModelMatrix(position, quatRot, scale);
+
     bool run = true;
     while(run) {
         SDL_PollEvent(&evt); 
         switch(evt.type) {
-                case SDL_EVENT_QUIT:
-                    run = false;
-                    break;
-                case SDL_EVENT_KEY_DOWN:
-                    switch(evt.key.scancode) {
-                        case SDL_SCANCODE_A:
-                            position -= Vector3(0.05f, 0.0f, 0.0f);
-                            break;
-                        case SDL_SCANCODE_D:
-                            position += Vector3(0.05f, 0.0f, 0.0f);
-                            break;
-                        case SDL_SCANCODE_W:
-                            position += Vector3(0.0f, 0.0f, 0.05f);
-                            break;
-                        case SDL_SCANCODE_S:
-                            position -= Vector3(0.0f, 0.0f, 0.05f);
-                            break;
-                        case SDL_SCANCODE_RIGHT:
-                            rotation += Vector3(0.0f, 0.5f, 0.0f);
-                            break;
-                        case SDL_SCANCODE_LEFT:
-                            rotation -= Vector3(0.0f, 0.5f, 0.0f);
-                            break;
-                        case SDL_SCANCODE_UP:
-                            rotation += Vector3(0.5f, 0.0f, 0.0f);
-                            break;
-                        case SDL_SCANCODE_DOWN:
-                            rotation -= Vector3(0.5f, 0.0f, 0.0f);
-                            break;
-                        case SDL_SCANCODE_X:
-                            scale += Vector3(1.0f, 0.0f, 0.0f);
-                            break;
-                        case SDL_SCANCODE_Y:
-                            scale += Vector3(0.0f, 1.0f, 0.0f);
-                            break;
-                        case SDL_SCANCODE_Z:
-                            scale += Vector3(0.0f, 0.0f, 1.0f);
-                            break;
-                    }
-                    quatRot = MakeQuaternion(rotation);
-                    model = Dot(CreateScaleMatrix(scale), Identity4x4);
-                    model = Dot(CreateRotationMatrix(quatRot), model);
-                    model = Dot(CreateTranslationMatrix(position), model);
+            case SDL_EVENT_QUIT:
+                run = false;
+                break;
+            case SDL_EVENT_KEY_DOWN:
+                switch(evt.key.scancode) {
+                    case SDL_SCANCODE_A:
+                        position -= Vector3(0.05f, 0.0f, 0.0f);
+                        break;
+                    case SDL_SCANCODE_D:
+                        position += Vector3(0.05f, 0.0f, 0.0f);
+                        break;
+                    case SDL_SCANCODE_W:
+                        position += Vector3(0.0f, 0.0f, 0.05f);
+                        break;
+                    case SDL_SCANCODE_S:
+                        position -= Vector3(0.0f, 0.0f, 0.05f);
+                        break;
+                    case SDL_SCANCODE_RIGHT:
+                        rotation += Vector3(0.0f, 0.5f, 0.0f);
+                        break;
+                    case SDL_SCANCODE_LEFT:
+                        rotation -= Vector3(0.0f, 0.5f, 0.0f);
+                        break;
+                    case SDL_SCANCODE_UP:
+                        rotation += Vector3(0.5f, 0.0f, 0.0f);
+                        break;
+                    case SDL_SCANCODE_DOWN:
+                        rotation -= Vector3(0.5f, 0.0f, 0.0f);
+                        break;
+                    case SDL_SCANCODE_X:
+                        scale += Vector3(1.0f, 0.0f, 0.0f);
+                        break;
+                    case SDL_SCANCODE_Y:
+                        scale += Vector3(0.0f, 1.0f, 0.0f);
+                        break;
+                    case SDL_SCANCODE_Z:
+                        scale += Vector3(0.0f, 0.0f, 1.0f);
+                        break;
+                }
+                quatRot = MakeQuaternion(rotation);
+                model = CreateModelMatrix(position, quatRot, scale);
+
+                std::cout<<model<<std::endl;
+                
         }
-        // std::cout<<"model matrix:\n";
-        // for(int i = 0; i<4; i++) {
-        //     for(int j = 0; j<4; j++) {
-        //         std::cout<<model.data[i][j]<<" ";
-        //     }
-        //     std::cout<<"\n";
-        // }
+
         std::cout<<"\n\n\n";
         glUseProgram(shaderProg);
         glBindVertexArray(vao);

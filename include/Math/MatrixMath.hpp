@@ -91,9 +91,9 @@ inline Matrix4x4 Transpose(Matrix4x4& in) {
 }
 inline constexpr Matrix4x4 CreateTranslationMatrix(Vector3 in) {
     Matrix4x4 result = Identity4x4;
-    result.data[3][0] = in.x;
-    result.data[3][1] = in.y;
-    result.data[3][2] = in.z;
+    result.data[0][3] = in.x;
+    result.data[1][3] = in.y;
+    result.data[2][3] = in.z;
     return result;
 }
 inline constexpr Matrix4x4 CreateRotationMatrix(Quaternion inRot) {
@@ -128,6 +128,35 @@ inline constexpr Matrix4x4 CreateScaleMatrix(Vector3 inScale) {
     return result;
 }
 
+
+inline Matrix4x4 CreateModelMatrix(Vector3 inPos, Quaternion inRot, Vector3 inScale) {
+    Matrix4x4 result = Identity4x4;
+    float i = inRot.x;
+    float i2 = inRot.x*inRot.x;
+    float j = inRot.y;
+    float j2 = inRot.y*inRot.y;
+    float k = inRot.z;
+    float k2 = inRot.z*inRot.z;
+    float r = inRot.w;
+    float r2 = inRot.w*inRot.w;
+    result.data[0][0] = inScale.x * (1.f - 2.f * (j2 + k2));
+    result.data[1][0] = 2.f*(i*j) - 2.f*(r*k);
+    result.data[2][0] = 2.f*(i*k)+2.f*(r*j);
+
+    result.data[0][1] = 2.f*(i*j) + 2.f*(r*k);
+    result.data[1][1] = inScale.y * (1.f - 2.f * (i2 + k2));
+    result.data[2][1] = 2.f*(j*k) - 2.f*(r*i);
+
+    result.data[0][2] = 2.f*(i*k) - 2.f*(r*j);
+    result.data[1][2] = 2.f*(j*k) + 2.f*(r*i);
+    result.data[2][2] = inScale.z * (1.f - 2.f * (i2 + j2));
+
+    result.data[3][0] = inPos.x;
+    result.data[3][1] = inPos.y;
+    result.data[3][2] = inPos.z;
+
+    return result;
+}
 inline Matrix4x4 CreatePerspectiveProjectionMatrix(const float fov, const float near, const float far, float aspectRatio) {
     //put into row major order
     Matrix4x4 projMat = Identity4x4;
@@ -135,8 +164,8 @@ inline Matrix4x4 CreatePerspectiveProjectionMatrix(const float fov, const float 
     projMat.data[0][0] = projScale/aspectRatio;
     projMat.data[1][1] = projScale;
     projMat.data[2][2] = (far+near)/(near-far);
-    projMat.data[2][3] = (2*far*near)/(near-far);
-    projMat.data[3][2] = -1.0f;
+    projMat.data[3][2] = (2*far*near)/(near-far);
+    projMat.data[2][3] = -1.0f;
     projMat.data[3][3] = 0.0f;
     return projMat;
 }

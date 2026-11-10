@@ -24,7 +24,18 @@ struct alignas(32) Matrix4x4 {
             }
         }
         return *this;
-    } 
+    }
+    friend std::ostream& operator<<(std::ostream& stream, const Matrix4x4& mat) {
+        //print in college math order
+        for(int i = 0; i<4; i++) {
+            stream << "[";
+            for (int j = 0; j<4; j++) {
+                stream << mat.data[j][i] << " ";
+            }
+            stream << "]\n";
+        }
+        return stream;
+    }
 };
 constexpr static Matrix2x2 Identity2x2 {
     {

@@ -1,6 +1,8 @@
 #ifndef VECTOR_DATA_TYPES
 #define VECTOR_DATA_TYPES
 
+#include "Containers/Simple_Array.hpp"
+
 struct alignas(8) Vector2 {
     using data_type = float;
     float x;
@@ -25,6 +27,11 @@ struct alignas(16) Vector3 {
         this->z -= rhs.z;
         return *this;
     }
+    // Vector3& CalculateNormals(const Simple_Array<Vector3, 3>& triangle) {
+    //     Vector3 edge1 = triangle[1] - triangle[0];
+    //     Vector3 edge2 = triangle[1] - triangle[2];
+    //     return edge1;
+    // }
 };
 struct alignas(16) Vector4 {
     using data_type = float;
